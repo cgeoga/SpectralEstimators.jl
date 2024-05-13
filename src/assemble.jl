@@ -24,7 +24,9 @@ Base.size(ww::WeakWoodbury, j)     = size(ww.A, j)
 
 function _fftcovmat(sdf::ParametricSDF{S,P}, n, ::Type{T}; 
                     sketchmat=0, method=:reigen) where{S,P,T}
-  kv    = evaluate_covariance(sdf, n)
+  # TODO (cg 2024/04/30 15:35): provide the rough points here, which would speed
+  # up QuadGK a lot potentially. It clearly isn't the bottleneck regardless though.
+  kv    = evaluate_covariance(sdf, n; method=sdf.kernel_tail_method)
   tm    = PDHermitianToeplitz(kv, nbufcols=sdf.rank+10)
   wgrid = range(-0.5, 0.5, length=n+1)[1:n]
   sdfv  = complex(sdf.(wgrid))

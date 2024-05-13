@@ -1,6 +1,6 @@
 module SpectralEstimators
 
-  using LinearAlgebra, FFTW, QuadGK, ForwardDiff, WoodburyMatrices
+  using LinearAlgebra, FFTW, FINUFFT, FastGaussQuadrature, QuadGK, ForwardDiff, WoodburyMatrices
 
   include("utils.jl")
   include("aquad.jl")

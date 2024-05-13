@@ -3,15 +3,16 @@ struct SDFModel{S}
   sdf::S
   asexp_intervals::Vector{Tuple{Float64, Float64}}
   rank::Int64 # rank of the remainder term
+  kernel_tail_method::Symbol
 end
 
-function SDFModel(sdf::S, roughpoints=Float64[]; rank=50) where{S} 
+function SDFModel(sdf::S, roughpoints=Float64[]; rank=50, kernel_tail_method=:asexp) where{S} 
   if in(-1/2, roughpoints) || in(1/2, roughpoints)
     throw(error("This code currently does not handle roughness at the endpoints correctly, sorry. Please use a different model."))
   end
   rpts = vcat(-1/2, roughpoints, 1/2)
   asexp_intervals = map(z->(nextfloat(z[1]), prevfloat(z[2])), zip(rpts, rpts[2:end]))
-  SDFModel(sdf, asexp_intervals, rank)
+  SDFModel(sdf, asexp_intervals, rank, kernel_tail_method)
 end
 
 struct ParametricSDF{S,P}
@@ -19,11 +20,12 @@ struct ParametricSDF{S,P}
   params::P
   asexp_intervals::Vector{Tuple{Float64, Float64}}
   rank::Int64
+  kernel_tail_method::Symbol
 end
 (psdf::ParametricSDF{S,P})(w) where{S,P} = psdf.sdf(w, psdf.params)
 
 function ParametricSDF(sdfm::SDFModel{S}, params::P=nothing) where{S,P} 
-  ParametricSDF(sdfm.sdf, params, sdfm.asexp_intervals, sdfm.rank)
+  ParametricSDF(sdfm.sdf, params, sdfm.asexp_intervals, sdfm.rank, sdfm.kernel_tail_method)
 end
 
 struct ComponentFunction{J,F,P,X}
