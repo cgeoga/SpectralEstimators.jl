@@ -38,7 +38,7 @@ parametric_sdf = SpectralEstimators.ParametricSDF(model, (5.0, 0.1, 1.25))
 fftcov         = SpectralEstimators.fftcovmat(parametric_sdf, 3_000)
 
 # Enjoy! Take a look at the source to see all the methods. Here is a simple case
-of the negative log-likelihood (nll):
+# of the negative log-likelihood (nll):
 @show SpectralEstimators.nll(fftcov, rand(3000))
 ```
 
