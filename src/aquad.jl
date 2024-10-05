@@ -6,7 +6,7 @@ struct Kronrod{S} <: QuadRule
 end
 
 function Kronrod(::Type{T}=Float64, n::Int64=5000) where{T}
-  segbuf = QuadGK.alloc_segbuf(Float64, T, T; size=n)
+  segbuf = QuadGK.alloc_segbuf(Float64, T, Float64; size=n)
   Kronrod(segbuf)
 end
 

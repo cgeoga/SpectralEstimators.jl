@@ -1,5 +1,5 @@
 
-function evaluate_covariance(sdf::ParametricSDF{S}, n; cutoff=2000, method=:asexp) where{S}
+function evaluate_covariance(sdf::ParametricSDF{S}, n; cutoff=2000, method=:nufft) where{S}
   T        = eltype(sdf(0.0))
   out      = zeros(T, n)
   krv      = [Kronrod(T) for _ in 1:Threads.nthreads()]
