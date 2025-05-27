@@ -1,7 +1,6 @@
 
 struct FFTCovMat{W}
   woodbury::W
-  method::Symbol
 end
 
 Base.Matrix(ftc::FFTCovMat{W}) where{W}  = Matrix(ftc.woodbury)
@@ -22,8 +21,7 @@ Base.Matrix(ww::WeakWoodbury)      = ww.A + ww.U*(ww.C*ww.V)
 Base.adjoint(ww::WeakWoodbury)     = WeakWoodbury(ww.A, ww.V', ww.C, ww.U')
 Base.size(ww::WeakWoodbury, j)     = size(ww.A, j)
 
-function _fftcovmat(sdf::ParametricSDF{S,P}, n, ::Type{T}; 
-                    sketchmat=0, method=:reigen) where{S,P,T}
+function _fftcovmat(sdf::ParametricSDF{S,P}, n, ::Type{T}) where{S,P,T}
   # TODO (cg 2024/04/30 15:35): provide the rough points here, which would speed
   # up QuadGK a lot potentially. It clearly isn't the bottleneck regardless though.
   kv    = evaluate_covariance(sdf, n; method=sdf.kernel_tail_method)
@@ -37,27 +35,20 @@ function _fftcovmat(sdf::ParametricSDF{S,P}, n, ::Type{T};
     D = Diagonal(sdfv)
     wood = T(D, zeros(n,1), [1.0;;], zeros(n,1)')
   else
-    lmap  = PgramRemainder(real(sdfv), tm, false)
-    if method == :fast
-      (C,R) = rfact(lmap, sdf.rank)
-      wood = T(Diagonal(sdfv), C, Diagonal(ones(ComplexF64, sdf.rank)), R')
-    elseif method == :reigen
-      (U,L) = reigen(lmap, sdf.rank)
-      wood = T(Diagonal(sdfv), U, Diagonal(L), U')
-    else
-      throw(error("Method options are :fast (unstructured low-rank approx), or :reigen (eigen)."))
-    end
+    lmap   = PgramRemainder(real(sdfv), tm)
+    (L, U) = pheig(HermitianLinearOperator(lmap); atol=1e-10, rank=sdf.rank)
+    wood   = T(Diagonal(sdfv), U, Diagonal(L), U')
   end
-  FFTCovMat(wood, method)
+  FFTCovMat(wood)
 end
 
 # TODO (cg 2024/03/12 16:05): check type stability of this hack.
-function fftcovmat(sdf::ParametricSDF{S,P}, n; method=:reigen) where{S,P}
-  _fftcovmat(sdf, n, Woodbury; method=method)
+function fftcovmat(sdf::ParametricSDF{S,P}, n) where{S,P}
+  _fftcovmat(sdf, n, Woodbury)
 end
 
-function weakfftcovmat(sdf::ParametricSDF{S,P}, n; method=:reigen) where{S,P}
-  _fftcovmat(sdf, n, WeakWoodbury; method=method)
+function weakfftcovmat(sdf::ParametricSDF{S,P}, n) where{S,P}
+  _fftcovmat(sdf, n, WeakWoodbury)
 end
 
 function LinearAlgebra.logdet(ftcov::FFTCovMat{W}) where{W} 

@@ -1,6 +1,6 @@
 module SpectralEstimators
 
-  using LinearAlgebra, FFTW, FINUFFT, FastGaussQuadrature, QuadGK, ForwardDiff, WoodburyMatrices
+  using LinearAlgebra, FFTW, FINUFFT, FastGaussQuadrature, QuadGK, ForwardDiff, WoodburyMatrices, LowRankApprox
 
   include("utils.jl")
   include("aquad.jl")
@@ -8,7 +8,7 @@ module SpectralEstimators
   include("sdf.jl")
   include("quadkernel.jl")
   include("asymptotic_int.jl")
-  include("rfact.jl")
+  include("remainder.jl")
   include("assemble.jl")
 
 end 
